@@ -9,8 +9,8 @@ public record CarBookingConfirmRequest(
         @NotNull Integer vehicleID,
         @NotNull OffsetDateTime rentalStartDate,
         @NotNull OffsetDateTime rentalEndDate,
-//        @NotNull VehicleCategoryEnum vehicleCategory,
-//        @NotNull PaymentModeEnum paymentMode,
+        @NotNull VehicleCategoryRequestEnum vehicleCategory,
+        @NotNull PaymentModeRequestEnum paymentMode,
         String paymentReference
 ){
 }
