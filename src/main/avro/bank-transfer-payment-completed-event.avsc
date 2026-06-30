@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "BankTransferPaymentCompletedEvent",
+  "namespace": "nl.velocitymotors.carbooking.payment.avro",
+  "doc": "Event published when a bank transfer payment is completed.",
+  "fields": [
+    { "name": "paymentId", "type": "string", "doc": "Unique identifier of payment."},
+    { "name": "senderAccountNumber", "type": "string", "doc": "Account number of the sender."},
+    { "name": "paymentAmount", "type": {"type": "bytes", "logicalType": "decimal", "precision": 12, "scale": 2}, "doc": "Amount received."},
+    { "name": "transactionDetails", "type": "string", "doc": "Format: <TxnRef(12 chars)> <BookingId(10 chars)>"}
+  ]
+}
