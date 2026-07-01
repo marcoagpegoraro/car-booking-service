@@ -1,7 +1,7 @@
 package nl.velocitymotors.car_booking_service.port.out;
 
-import domain.model.CarBookingConfirmCommand;
-import domain.model.CarBookingSaved;
+import nl.velocitymotors.car_booking_service.domain.model.CarBookingConfirmCommand;
+import nl.velocitymotors.car_booking_service.domain.model.CarBookingSaved;
 
 public interface CarBookingPort {
 

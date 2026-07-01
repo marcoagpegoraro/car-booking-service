@@ -1,4 +1,4 @@
-package domain.model;
+package nl.velocitymotors.car_booking_service.domain.model;
 
 import java.time.OffsetDateTime;
 

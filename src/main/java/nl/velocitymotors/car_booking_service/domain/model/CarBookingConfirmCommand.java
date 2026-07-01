@@ -1,7 +1,7 @@
-package domain.model;
+package nl.velocitymotors.car_booking_service.domain.model;
 
-import domain.enums.PaymentModeEnum;
-import domain.enums.VehicleCategoryEnum;
+import nl.velocitymotors.car_booking_service.domain.enums.PaymentModeEnum;
+import nl.velocitymotors.car_booking_service.domain.enums.VehicleCategoryEnum;
 
 import java.time.OffsetDateTime;
 
