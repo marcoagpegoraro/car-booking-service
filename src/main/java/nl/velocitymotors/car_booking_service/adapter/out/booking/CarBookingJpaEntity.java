@@ -17,7 +17,7 @@ import java.time.OffsetDateTime;
 public class CarBookingJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
     private String vehicleID;
     private OffsetDateTime rentalStartDate;
     private OffsetDateTime rentalEndDate;

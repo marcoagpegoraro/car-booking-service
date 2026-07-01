@@ -11,7 +11,7 @@ public class CarBookingConfirmStartAndEndDateValidator implements CarBookingConf
 
     public void validate(CarBookingConfirmCommand request){
         if(request.rentalStartDate().isAfter(request.rentalEndDate())){
-            throw new InvalidCarConfirmationException("The car booking start date cannot be greater than the end date.");
+            throw new InvalidCarConfirmationException("The car booking start date cannot be greater than the end date");
         }
     }
 }

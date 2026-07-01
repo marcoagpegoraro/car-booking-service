@@ -10,8 +10,10 @@ import nl.velocitymotors.car_booking_service.domain.model.CarBookingSaved;
 import nl.velocitymotors.car_booking_service.port.out.PaymentServicePort;
 import nl.velocitymotors.car_booking_service.port.out.CarBookingPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service("CREDIT_CARD")
 @RequiredArgsConstructor
 public class PaymentCreditCardStrategy implements PaymentStrategy {
@@ -28,6 +30,8 @@ public class PaymentCreditCardStrategy implements PaymentStrategy {
             return new CarBookingExecuted(carBookingSaved.id(), bookingStatus);
         }
 
-        throw new PaymentNotConfirmedException("The credit card payment is not confirmed.");
+        log.warn("Credit card payment not approved (status {}) for reference {}. rejecting booking",
+                paymentDetails.status(), command.paymentReference());
+        throw new PaymentNotConfirmedException("The credit card payment is not confirmed");
     }
 }

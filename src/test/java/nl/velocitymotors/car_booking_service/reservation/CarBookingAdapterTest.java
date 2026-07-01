@@ -42,7 +42,7 @@ class CarBookingAdapterTest {
 
         CarBookingJpaEntity jpaEntity = new CarBookingJpaEntity();
         CarBookingJpaEntity savedJpaEntity = new CarBookingJpaEntity();
-        CarBookingSaved expectedDto = new CarBookingSaved("1", "", OffsetDateTime.now(), OffsetDateTime.now(), "", "", "", "", "");
+        CarBookingSaved expectedDto = new CarBookingSaved(1L, "", OffsetDateTime.now(), OffsetDateTime.now(), "", "", "", "", "");
 
         when(carBookingMapper.commandToJpa(command, rookingStatus))
                 .thenReturn(jpaEntity);
@@ -67,13 +67,13 @@ class CarBookingAdapterTest {
     @Test
     void updateBookingPaymentStatus_shouldUpdateStatus_whenBookingExists() {
         // GIVEN
-        var rookingId = "1";
+        var rookingId = 1L;
         var newStatus = BookingStatusEnum.CONFIRMED;
 
         CarBookingJpaEntity rooking = new CarBookingJpaEntity();
         rooking.setBookingStatus("PENDING");
 
-        when(carBookingJpaRepository.findById(rookingId))
+        when(carBookingJpaRepository.findById(1L))
                 .thenReturn(Optional.of(rooking));
 
         // WHEN
@@ -87,9 +87,9 @@ class CarBookingAdapterTest {
     @Test
     void updateBookingPaymentStatus_shouldThrowException_whenBookingNotFound() {
         // GIVEN
-        var rookingId = "99";
+        var rookingId = 99L;
 
-        when(carBookingJpaRepository.findById(rookingId))
+        when(carBookingJpaRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
         // WHEN / THEN
@@ -100,7 +100,7 @@ class CarBookingAdapterTest {
                                 rookingId, BookingStatusEnum.CONFIRMED)
                 );
 
-        assertTrue(exception.getMessage().contains(rookingId.toString()));
+        assertTrue(exception.getMessage().contains(String.valueOf(rookingId)));
         verify(carBookingJpaRepository, Mockito.never()).save(Mockito.any());
     }
 }

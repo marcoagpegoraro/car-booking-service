@@ -13,7 +13,7 @@ public class UpdateBookingPayedByBankTransferPaymentUseCase implements UpdateBoo
     private final CarBookingPort carBookingPort;
 
     @Override
-    public void execute(final String bookingId) {
+    public void execute(final Long bookingId) {
         carBookingPort.updateBookingPaymentStatus(bookingId, BookingStatusEnum.CONFIRMED);
     }
 }

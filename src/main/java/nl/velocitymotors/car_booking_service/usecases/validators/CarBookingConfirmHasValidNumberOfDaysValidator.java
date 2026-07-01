@@ -14,7 +14,7 @@ public class CarBookingConfirmHasValidNumberOfDaysValidator implements CarBookin
     public void validate(CarBookingConfirmCommand request){
         long carBookingDays = ChronoUnit.DAYS.between(request.rentalStartDate(), request.rentalEndDate());
         if(carBookingDays > MAX_NUMBER_OF_DAYS_FOR_CAR_BOOKING_ALLOWED){
-            throw new InvalidCarConfirmationException("The maximum number of days for a car booking is " + MAX_NUMBER_OF_DAYS_FOR_CAR_BOOKING_ALLOWED + ".");
+            throw new InvalidCarConfirmationException("The maximum number of days for a car booking is " + MAX_NUMBER_OF_DAYS_FOR_CAR_BOOKING_ALLOWED );
         }
     }
 }
