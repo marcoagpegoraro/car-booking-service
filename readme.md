@@ -128,10 +128,31 @@ Rejected payment reference:
 ## References:
 
 https://stackoverflow.com/questions/11631800/hibernate-how-specify-custom-sequence-generator-class-name-using-annotations
+
+<br/>
+
 https://github.com/isdelrey/kafkajs-avro
+
+<br/>
+
 https://www.baeldung.com/hibernate-identifiers
+
+<br/>
+
 https://stackoverflow.com/questions/63414507/push-avro-message-to-kafka-topic
+
+<br/>
+
 https://medium.com/@arun.badhai/entity-value-object-aggregate-and-aggregate-root-in-ddd-9fb9342c1df0
+
+<br/>
+
 https://medium.com/bliblidotcom-techblog/spring-cloud-circuit-breaker-implementation-using-resilience4j-and-spring-open-feign-734d0fd34e37
+
+<br/>
+
 https://www.baeldung.com/spring-scheduled-tasks
+
+<br/>
+
 https://dev.to/jhonifaber/hexagonal-architecture-or-port-adapters-23ed
