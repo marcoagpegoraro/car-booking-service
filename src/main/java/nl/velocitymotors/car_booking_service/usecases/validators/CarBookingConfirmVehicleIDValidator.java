@@ -9,7 +9,7 @@ public class CarBookingConfirmVehicleIDValidator implements CarBookingConfirmVal
 
     public void validate(CarBookingConfirmCommand request){
         if(request.vehicleID().isBlank()){
-            throw new InvalidCarConfirmationException("The car booking start date cannot be empty.");
+            throw new InvalidCarConfirmationException("The vehicle ID cannot be empty.");
         }
     }
 }
