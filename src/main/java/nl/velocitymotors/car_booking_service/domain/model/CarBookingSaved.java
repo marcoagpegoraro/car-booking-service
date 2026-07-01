@@ -3,7 +3,7 @@ package nl.velocitymotors.car_booking_service.domain.model;
 import java.time.OffsetDateTime;
 
 public record CarBookingSaved(
-        Long id,
+        String id,
         String vehicleID,
         OffsetDateTime bookingStartDate,
         OffsetDateTime bookingEndDate,

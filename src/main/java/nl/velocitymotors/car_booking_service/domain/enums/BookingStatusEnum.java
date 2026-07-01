@@ -1,6 +1,6 @@
 package nl.velocitymotors.car_booking_service.domain.enums;
 
-public enum CarBookingEnum {
+public enum BookingStatusEnum {
     PENDING_PAYMENT,
     CONFIRMED,
     CANCELLED;
