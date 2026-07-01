@@ -1,7 +1,7 @@
 package nl.velocitymotors.car_booking_service.adapter.in.messaging;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.velocitymotors.carbookingservice.payment.avro.BankTransferPaymentCompletedEvent;
+import nl.velocitymotors.carbooking.payment.avro.BankTransferPaymentCompletedEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
