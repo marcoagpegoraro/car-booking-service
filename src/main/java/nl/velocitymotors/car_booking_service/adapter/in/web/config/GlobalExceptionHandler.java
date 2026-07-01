@@ -6,10 +6,13 @@ import nl.velocitymotors.car_booking_service.domain.exceptions.*;
 import nl.velocitymotors.car_booking_service.domain.exceptions.IntegrationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import tools.jackson.databind.exc.InvalidFormatException;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +51,38 @@ public class GlobalExceptionHandler {
         log.warn("Booking not found: {}", ex.getMessage());
         final var  errorResponse = new ErrorResponse(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidBookingStateException.class)
+    public ResponseEntity<ErrorResponse> handleException(InvalidBookingStateException ex) {
+        log.warn("Invalid booking state transition: {}", ex.getMessage());
+        final var  errorResponse = new ErrorResponse(ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        log.warn("Unreadable request body: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(describeUnreadableBody(ex)));
+    }
+
+    private String describeUnreadableBody(final HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof InvalidFormatException formatException) {
+            final String field = formatException.getPath().isEmpty()
+                    ? "request body"
+                    : formatException.getPath().getLast().getPropertyName();
+            final Class<?> targetType = formatException.getTargetType();
+
+            if (targetType != null && targetType.isEnum()) {
+                final String accepted = Arrays.stream(targetType.getEnumConstants())
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+                return "Invalid value '%s' for field '%s'. Accepted values: [%s]"
+                        .formatted(formatException.getValue(), field, accepted);
+            }
+            return "Invalid value '%s' for field '%s'".formatted(formatException.getValue(), field);
+        }
+        return "Malformed request body.";
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

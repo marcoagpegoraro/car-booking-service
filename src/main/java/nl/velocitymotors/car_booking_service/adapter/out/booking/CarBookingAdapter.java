@@ -1,13 +1,12 @@
 package nl.velocitymotors.car_booking_service.adapter.out.booking;
 
-import nl.velocitymotors.car_booking_service.adapter.out.booking.mapper.CarBookingMapper;
+import lombok.RequiredArgsConstructor;
 import nl.velocitymotors.car_booking_service.domain.enums.BookingStatusEnum;
 import nl.velocitymotors.car_booking_service.domain.enums.PaymentModeEnum;
-import nl.velocitymotors.car_booking_service.domain.exceptions.BookingNotFoundException;
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingConfirmCommand;
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingSaved;
+import nl.velocitymotors.car_booking_service.domain.enums.VehicleCategoryEnum;
+import nl.velocitymotors.car_booking_service.domain.model.Booking;
+import nl.velocitymotors.car_booking_service.domain.model.RentalPeriod;
 import nl.velocitymotors.car_booking_service.port.out.CarBookingPort;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -19,32 +18,52 @@ import java.util.Optional;
 public class CarBookingAdapter implements CarBookingPort {
 
     private final CarBookingJpaRepository carBookingJpaRepository;
-    private final CarBookingMapper carBookingMapper;
 
-    public CarBookingSaved saveBooking(CarBookingConfirmCommand command, BookingStatusEnum bookingStatus){
-        CarBookingJpaEntity carBookingJpaEntity = carBookingMapper.commandToJpa(command, bookingStatus);
-        CarBookingJpaEntity savedCarBookingEntity = carBookingJpaRepository.save(carBookingJpaEntity);
-        return carBookingMapper.jpaToDto(savedCarBookingEntity);
+    @Override
+    public Booking save(final Booking booking) {
+        final CarBookingJpaEntity entity = booking.getId() == null
+                ? new CarBookingJpaEntity()
+                : carBookingJpaRepository.findById(booking.getId()).orElseGet(CarBookingJpaEntity::new);
+
+        applyToEntity(booking, entity);
+        return toDomain(carBookingJpaRepository.save(entity));
     }
 
-    public void updateBookingPaymentStatus(Long bookingId, BookingStatusEnum bookingStatus){
-        Optional<CarBookingJpaEntity> bookingOptional = carBookingJpaRepository.findById(bookingId);
-        if(bookingOptional.isEmpty()){
-            throw new BookingNotFoundException("The provided booking ID was not found: " + bookingId);
-        }
-        final var booking = bookingOptional.get();
-        booking.setBookingStatus(String.valueOf(bookingStatus));
-        carBookingJpaRepository.save(booking);
+    @Override
+    public Optional<Booking> findById(final Long bookingId) {
+        return carBookingJpaRepository.findById(bookingId).map(this::toDomain);
     }
 
-    public List<CarBookingSaved> findBookingsStartingBefore(final PaymentModeEnum paymentMode,
-                                                            final BookingStatusEnum status,
-                                                            final OffsetDateTime rentalStartDateThreshold) {
+    @Override
+    public List<Booking> findBankTransferBookingsAwaitingPaymentStartingBefore(final OffsetDateTime moment) {
         return carBookingJpaRepository
                 .findByPaymentModeAndBookingStatusAndRentalStartDateLessThanEqual(
-                        paymentMode.name(), status.name(), rentalStartDateThreshold)
+                        PaymentModeEnum.BANK_TRANSFER.name(), BookingStatusEnum.PENDING_PAYMENT.name(), moment)
                 .stream()
-                .map(carBookingMapper::jpaToDto)
+                .map(this::toDomain)
                 .toList();
+    }
+
+    private void applyToEntity(final Booking booking, final CarBookingJpaEntity entity) {
+        entity.setCustomerName(booking.getCustomerName());
+        entity.setVehicleID(booking.getVehicleId());
+        entity.setRentalStartDate(booking.getRentalPeriod().start());
+        entity.setRentalEndDate(booking.getRentalPeriod().end());
+        entity.setVehicleCategory(booking.getVehicleCategory().name());
+        entity.setPaymentMode(booking.getPaymentMode().name());
+        entity.setPaymentReference(booking.getPaymentReference());
+        entity.setBookingStatus(booking.getStatus().name());
+    }
+
+    private Booking toDomain(final CarBookingJpaEntity entity) {
+        return Booking.reconstitute(
+                entity.getId(),
+                entity.getCustomerName(),
+                entity.getVehicleID(),
+                new RentalPeriod(entity.getRentalStartDate(), entity.getRentalEndDate()),
+                VehicleCategoryEnum.valueOf(entity.getVehicleCategory()),
+                PaymentModeEnum.valueOf(entity.getPaymentMode()),
+                entity.getPaymentReference(),
+                BookingStatusEnum.valueOf(entity.getBookingStatus()));
     }
 }

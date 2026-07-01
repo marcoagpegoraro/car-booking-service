@@ -1,10 +1,12 @@
 package nl.velocitymotors.car_booking_service.usecases;
 
-import nl.velocitymotors.car_booking_service.domain.enums.BookingStatusEnum;
+import lombok.RequiredArgsConstructor;
+import nl.velocitymotors.car_booking_service.domain.exceptions.BookingNotFoundException;
+import nl.velocitymotors.car_booking_service.domain.model.Booking;
 import nl.velocitymotors.car_booking_service.port.in.UpdateBookingPayedByBankTransferPort;
 import nl.velocitymotors.car_booking_service.port.out.CarBookingPort;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -13,7 +15,12 @@ public class UpdateBookingPayedByBankTransferPaymentUseCase implements UpdateBoo
     private final CarBookingPort carBookingPort;
 
     @Override
+    @Transactional
     public void execute(final Long bookingId) {
-        carBookingPort.updateBookingPaymentStatus(bookingId, BookingStatusEnum.CONFIRMED);
+        final Booking booking = carBookingPort.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("The provided booking ID was not found: " + bookingId));
+
+        booking.confirmPayment();
+        carBookingPort.save(booking);
     }
 }

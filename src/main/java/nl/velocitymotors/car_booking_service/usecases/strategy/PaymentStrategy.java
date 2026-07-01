@@ -1,8 +1,7 @@
 package nl.velocitymotors.car_booking_service.usecases.strategy;
 
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingConfirmCommand;
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingExecuted;
+import nl.velocitymotors.car_booking_service.domain.model.Booking;
 
 public interface PaymentStrategy {
-    CarBookingExecuted execute(CarBookingConfirmCommand command);
+    void apply(Booking booking);
 }

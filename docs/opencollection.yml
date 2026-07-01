@@ -1,0 +1,268 @@
+opencollection: 1.0.0
+info:
+  name: Car Booking Service
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ''
+      port: ''
+      auth:
+        username: ''
+        password: ''
+      bypassProxy: ''
+  environments:
+    - name: dev
+      variables:
+        - name: baseURL
+          value: http://localhost:8080
+items:
+  - info:
+      name: Payment API NOT OK
+      type: http
+      seq: 10
+    http:
+      method: POST
+      url: http://localhost:9090/host/credit-card-payment-api/payment-status
+      body:
+        type: json
+        data: |-
+          {
+              "paymentReference": "DL987654321" 
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Payment API OK
+      type: http
+      seq: 9
+    http:
+      method: POST
+      url: http://localhost:9090/host/credit-card-payment-api/payment-status
+      body:
+        type: json
+        data: |-
+          {
+              "paymentReference": "DL123456789" 
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Post Booking Bank Transfer
+      type: http
+      seq: 4
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 80,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-01-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+              "paymentMode": "BANK_TRANSFER"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Post Booking Credit Card (Reference NOT OK)
+      type: http
+      seq: 3
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 90,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-01-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+              "paymentMode": "CREDIT_CARD",
+              "paymentReference": "DL987654321"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Post Booking Credit Card (Reference OK)
+      type: http
+      seq: 2
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 90,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-01-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+              "paymentMode": "CREDIT_CARD",
+              "paymentReference": "DL123456789"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Validation Error (Enum)
+      type: http
+      seq: 8
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 90,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-02-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+             "paymentMode": "IBAN",
+              "paymentReference": "Reference"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Validation Error (Start date greater than end date)
+      type: http
+      seq: 6
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 90,
+              "rentalStartDate": "2027-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-02-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+             "paymentMode": "CASH",
+              "paymentReference": "Reference"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Validation Error (Empty required field)
+      type: http
+      seq: 5
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": null,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-02-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+             "paymentMode": "CASH",
+              "paymentReference": "Reference"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Validation Error (Rent date greater 22 days)
+      type: http
+      seq: 7
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 90,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-02-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+             "paymentMode": "CASH",
+              "paymentReference": "Reference"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+  - info:
+      name: Post Booking Cash
+      type: http
+      seq: 1
+    http:
+      method: POST
+      url: '{{baseURL}}/car-booking/confirm'
+      body:
+        type: json
+        data: |-
+          {
+              "customerName": "Marco",
+              "vehicleID": 1,
+              "rentalStartDate": "2026-01-05T21:25:00+01:00",
+              "rentalEndDate": "2026-01-10T21:25:00+01:00",
+              "vehicleCategory": "LUXURY",
+              "paymentMode": "CASH"
+          }
+      auth: inherit
+    settings:
+      encodeUrl: true
+      timeout: 0
+      followRedirects: true
+      maxRedirects: 5
+request:
+  variables:
+    - name: baseURL
+      value: ''
+bundled: true
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    exportedAt: '2026-07-01T15:03:56.224Z'
+    exportedUsing: Bruno

@@ -3,6 +3,7 @@ package nl.velocitymotors.car_booking_service.adapter.in.messaging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.velocitymotors.car_booking_service.domain.exceptions.BookingNotFoundException;
+import nl.velocitymotors.car_booking_service.domain.exceptions.InvalidBookingStateException;
 import nl.velocitymotors.car_booking_service.port.in.UpdateBookingPayedByBankTransferPort;
 import nl.velocitymotors.carbooking.payment.avro.BankTransferPaymentCompletedEvent;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -29,6 +30,9 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
             updateBookingPayedByBankTransfer.execute(bookingId);
         } catch (final BookingNotFoundException exception) {
             log.warn("Received a bank transfer payment for an unknown booking {}", bookingId, exception);
+        } catch (final InvalidBookingStateException exception) {
+            // e.g. a payment arriving for an already-cancelled booking; log and move on.
+            log.warn("Cannot apply bank transfer payment to booking {}: {}", bookingId, exception.getMessage());
         }
     }
 

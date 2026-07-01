@@ -1,9 +1,7 @@
 package nl.velocitymotors.car_booking_service.usecases;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.velocitymotors.car_booking_service.domain.enums.BookingStatusEnum;
-import nl.velocitymotors.car_booking_service.domain.enums.PaymentModeEnum;
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingSaved;
+import nl.velocitymotors.car_booking_service.domain.model.Booking;
 import nl.velocitymotors.car_booking_service.port.in.CancelExpiredBankTransferBookingsPort;
 import nl.velocitymotors.car_booking_service.port.out.CarBookingPort;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,15 +34,15 @@ public class CancelExpiredBankTransferBookingsUseCase implements CancelExpiredBa
     public int execute() {
         final OffsetDateTime deadline = OffsetDateTime.now(clock).plusHours(paymentWindowHours);
 
-        final List<CarBookingSaved> expiredBookings = carBookingPort.findBookingsStartingBefore(
-                PaymentModeEnum.BANK_TRANSFER, BookingStatusEnum.PENDING_PAYMENT, deadline);
+        final List<Booking> dueBookings = carBookingPort.findBankTransferBookingsAwaitingPaymentStartingBefore(deadline);
 
-        expiredBookings.forEach(booking -> {
+        dueBookings.forEach(booking -> {
             log.info("Auto cancelling booking {}: bank transfer not paid at least {}h before rental start",
-                    booking.id(), paymentWindowHours);
-            carBookingPort.updateBookingPaymentStatus(booking.id(), BookingStatusEnum.CANCELLED);
+                    booking.getId(), paymentWindowHours);
+            booking.cancel();
+            carBookingPort.save(booking);
         });
 
-        return expiredBookings.size();
+        return dueBookings.size();
     }
 }

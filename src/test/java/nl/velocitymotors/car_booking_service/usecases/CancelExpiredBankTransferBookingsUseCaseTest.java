@@ -2,7 +2,9 @@ package nl.velocitymotors.car_booking_service.usecases;
 
 import nl.velocitymotors.car_booking_service.domain.enums.BookingStatusEnum;
 import nl.velocitymotors.car_booking_service.domain.enums.PaymentModeEnum;
-import nl.velocitymotors.car_booking_service.domain.model.CarBookingSaved;
+import nl.velocitymotors.car_booking_service.domain.enums.VehicleCategoryEnum;
+import nl.velocitymotors.car_booking_service.domain.model.Booking;
+import nl.velocitymotors.car_booking_service.domain.model.RentalPeriod;
 import nl.velocitymotors.car_booking_service.port.out.CarBookingPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +20,10 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,50 +41,42 @@ class CancelExpiredBankTransferBookingsUseCaseTest {
     @Captor
     private ArgumentCaptor<OffsetDateTime> deadlineCaptor;
 
+    @Captor
+    private ArgumentCaptor<Booking> savedCaptor;
+
     private CancelExpiredBankTransferBookingsUseCase useCase() {
         return new CancelExpiredBankTransferBookingsUseCase(carBookingPort, FIXED_CLOCK, PAYMENT_WINDOW_HOURS);
     }
 
-    private static CarBookingSaved bookingWithId(final Long id) {
-        return new CarBookingSaved(id, "", null, null, "", "", "", "", "");
+    private static Booking pendingBankTransfer(final Long id) {
+        return Booking.reconstitute(id, "cust", "VH",
+                new RentalPeriod(OffsetDateTime.parse("2026-07-02T10:00:00Z"), OffsetDateTime.parse("2026-07-03T10:00:00Z")),
+                VehicleCategoryEnum.SUV, PaymentModeEnum.BANK_TRANSFER, "ref", BookingStatusEnum.PENDING_PAYMENT);
     }
 
     @Test
-    void shouldCancelEachExpiredBankTransferBooking() {
-        // GIVEN two bank-transfer bookings still pending payment inside the window
-        when(carBookingPort.findBookingsStartingBefore(
-                eq(PaymentModeEnum.BANK_TRANSFER), eq(BookingStatusEnum.PENDING_PAYMENT), deadlineCaptor.capture()))
-                .thenReturn(List.of(bookingWithId(1L), bookingWithId(2L)));
+    void shouldCancelAndSaveEachDueBooking() {
+        when(carBookingPort.findBankTransferBookingsAwaitingPaymentStartingBefore(deadlineCaptor.capture()))
+                .thenReturn(List.of(pendingBankTransfer(1L), pendingBankTransfer(2L)));
 
-        // WHEN
         final int cancelled = useCase().execute();
 
-        // THEN each booking is moved to CANCELLED and the count is returned
+        // THEN the deadline is now + 48h, and every due booking is cancelled and saved
         assertEquals(2, cancelled);
-        verify(carBookingPort).updateBookingPaymentStatus(1L, BookingStatusEnum.CANCELLED);
-        verify(carBookingPort).updateBookingPaymentStatus(2L, BookingStatusEnum.CANCELLED);
-    }
-
-    @Test
-    void shouldQueryUsingDeadline48HoursFromNow() {
-        when(carBookingPort.findBookingsStartingBefore(
-                eq(PaymentModeEnum.BANK_TRANSFER), eq(BookingStatusEnum.PENDING_PAYMENT), deadlineCaptor.capture()))
-                .thenReturn(List.of());
-
-        useCase().execute();
-
         assertEquals(EXPECTED_DEADLINE, deadlineCaptor.getValue());
+        verify(carBookingPort, times(2)).save(savedCaptor.capture());
+        assertTrue(savedCaptor.getAllValues().stream()
+                .allMatch(booking -> booking.getStatus() == BookingStatusEnum.CANCELLED));
     }
 
     @Test
-    void shouldDoNothingWhenNoBookingsAreExpired() {
-        when(carBookingPort.findBookingsStartingBefore(
-                eq(PaymentModeEnum.BANK_TRANSFER), eq(BookingStatusEnum.PENDING_PAYMENT), deadlineCaptor.capture()))
+    void shouldDoNothingWhenNoBookingsAreDue() {
+        when(carBookingPort.findBankTransferBookingsAwaitingPaymentStartingBefore(deadlineCaptor.capture()))
                 .thenReturn(List.of());
 
         final int cancelled = useCase().execute();
 
         assertEquals(0, cancelled);
-        verify(carBookingPort, never()).updateBookingPaymentStatus(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
+        verify(carBookingPort, never()).save(any());
     }
 }
