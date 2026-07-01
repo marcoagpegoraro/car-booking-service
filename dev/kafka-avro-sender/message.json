@@ -2,5 +2,5 @@
   "paymentId": "PAY-1",
   "senderAccountNumber": "NL00BANK0123456789",
   "paymentAmount": 250.00,
-  "transactionDetails": "TXN987654321 2"
+  "transactionDetails": "TXN987654321 BKG0000001"
 }

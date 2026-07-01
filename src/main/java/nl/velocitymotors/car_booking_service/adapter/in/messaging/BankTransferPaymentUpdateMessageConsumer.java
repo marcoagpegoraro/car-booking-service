@@ -22,7 +22,7 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
     )
     public void consume(final byte[] message) {
         final var event = deserialize(message, BankTransferPaymentCompletedEvent.class);
-        final Long bookingId = extractBookingId(event.getTransactionDetails());
+        final String bookingId = extractBookingId(event.getTransactionDetails());
 
         log.info("Received bank transfer payment {} for booking {}", event.getPaymentId(), bookingId);
 
@@ -36,7 +36,7 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
         }
     }
 
-    private static Long extractBookingId(final String transactionDetails) {
+    private static String extractBookingId(final String transactionDetails) {
         final String[] parts = transactionDetails == null ? new String[0] : transactionDetails.trim().split("\\s+");
 
         if (parts.length < 2) {
@@ -44,11 +44,6 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
                     "Unexpected transactionDetails, expected \"<TxnRef> <BookingId>\" but got: " + transactionDetails);
         }
 
-        final String bookingId = parts[parts.length - 1];
-        try {
-            return Long.valueOf(bookingId);
-        } catch (final NumberFormatException exception) {
-            throw new IllegalArgumentException("transactionDetails carries a non numeric booking id: " + bookingId, exception);
-        }
+        return parts[parts.length - 1];
     }
 }

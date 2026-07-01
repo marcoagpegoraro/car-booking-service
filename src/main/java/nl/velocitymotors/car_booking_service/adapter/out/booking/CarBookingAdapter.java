@@ -21,6 +21,8 @@ public class CarBookingAdapter implements CarBookingPort {
 
     @Override
     public Booking save(final Booking booking) {
+        // A new booking has no id yet — Hibernate assigns the "BKG…" reference on
+        // insert (see BookingReferenceGenerator), so this is a plain INSERT.
         final CarBookingJpaEntity entity = booking.getId() == null
                 ? new CarBookingJpaEntity()
                 : carBookingJpaRepository.findById(booking.getId()).orElseGet(CarBookingJpaEntity::new);
@@ -30,7 +32,7 @@ public class CarBookingAdapter implements CarBookingPort {
     }
 
     @Override
-    public Optional<Booking> findById(final Long bookingId) {
+    public Optional<Booking> findById(final String bookingId) {
         return carBookingJpaRepository.findById(bookingId).map(this::toDomain);
     }
 

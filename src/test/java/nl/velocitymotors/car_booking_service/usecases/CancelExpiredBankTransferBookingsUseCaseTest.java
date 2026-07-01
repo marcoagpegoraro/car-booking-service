@@ -48,7 +48,7 @@ class CancelExpiredBankTransferBookingsUseCaseTest {
         return new CancelExpiredBankTransferBookingsUseCase(carBookingPort, FIXED_CLOCK, PAYMENT_WINDOW_HOURS);
     }
 
-    private static Booking pendingBankTransfer(final Long id) {
+    private static Booking pendingBankTransfer(final String id) {
         return Booking.reconstitute(id, "cust", "VH",
                 new RentalPeriod(OffsetDateTime.parse("2026-07-02T10:00:00Z"), OffsetDateTime.parse("2026-07-03T10:00:00Z")),
                 VehicleCategoryEnum.SUV, PaymentModeEnum.BANK_TRANSFER, "ref", BookingStatusEnum.PENDING_PAYMENT);
@@ -57,7 +57,7 @@ class CancelExpiredBankTransferBookingsUseCaseTest {
     @Test
     void shouldCancelAndSaveEachDueBooking() {
         when(carBookingPort.findBankTransferBookingsAwaitingPaymentStartingBefore(deadlineCaptor.capture()))
-                .thenReturn(List.of(pendingBankTransfer(1L), pendingBankTransfer(2L)));
+                .thenReturn(List.of(pendingBankTransfer("BKG0000001"), pendingBankTransfer("BKG0000002")));
 
         final int cancelled = useCase().execute();
 

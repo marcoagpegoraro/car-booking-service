@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface CarBookingPort {
 
     Booking save(final Booking booking);
-    Optional<Booking> findById(final Long bookingId);
+    Optional<Booking> findById(final String bookingId);
     List<Booking> findBankTransferBookingsAwaitingPaymentStartingBefore(final OffsetDateTime moment);
 }

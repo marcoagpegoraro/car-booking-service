@@ -37,7 +37,7 @@ class CarBookingAdapterTest {
     @InjectMocks
     private CarBookingAdapter carBookingAdapter;
 
-    private static CarBookingJpaEntity entity(final Long id, final String status) {
+    private static CarBookingJpaEntity entity(final String id, final String status) {
         final var entity = new CarBookingJpaEntity();
         entity.setId(id);
         entity.setCustomerName("Ana");
@@ -58,15 +58,15 @@ class CarBookingAdapterTest {
 
     @Test
     void save_shouldInsertNewBookingAndReturnItWithGeneratedId() {
-        // GIVEN
+        // GIVEN a new booking (no id yet); Hibernate assigns the reference on insert
         when(carBookingJpaRepository.save(any(CarBookingJpaEntity.class)))
-                .thenReturn(entity(1L, "PENDING_PAYMENT"));
+                .thenReturn(entity("BKG0000001", "PENDING_PAYMENT"));
 
         // WHEN
         final Booking result = carBookingAdapter.save(newBooking());
 
-        // THEN
-        assertEquals(1L, result.getId());
+        // THEN it is inserted (never loaded first) and returned with the reference
+        assertEquals("BKG0000001", result.getId());
         assertEquals(BookingStatusEnum.PENDING_PAYMENT, result.getStatus());
         verify(carBookingJpaRepository, never()).findById(any());
         verify(carBookingJpaRepository).save(any(CarBookingJpaEntity.class));
@@ -74,28 +74,28 @@ class CarBookingAdapterTest {
 
     @Test
     void save_shouldApplyChangesOntoTheExistingManagedRow() {
-        // GIVEN
-        final Booking cancelled = Booking.reconstitute(5L, "Ana", "VH-1", new RentalPeriod(START, END),
+        // GIVEN an existing booking that has been cancelled
+        final Booking cancelled = Booking.reconstitute("BKG0000005", "Ana", "VH-1", new RentalPeriod(START, END),
                 VehicleCategoryEnum.SUV, PaymentModeEnum.BANK_TRANSFER, "ref", BookingStatusEnum.CANCELLED);
-        final CarBookingJpaEntity managedRow = entity(5L, "PENDING_PAYMENT");
-        when(carBookingJpaRepository.findById(5L)).thenReturn(Optional.of(managedRow));
+        final CarBookingJpaEntity managedRow = entity("BKG0000005", "PENDING_PAYMENT");
+        when(carBookingJpaRepository.findById("BKG0000005")).thenReturn(Optional.of(managedRow));
         when(carBookingJpaRepository.save(managedRow)).thenReturn(managedRow);
 
         // WHEN
         final Booking result = carBookingAdapter.save(cancelled);
 
-        // THEN
+        // THEN the loaded row is mutated in place (createdAt preserved) and saved
         assertEquals("CANCELLED", managedRow.getBookingStatus());
-        assertEquals(5L, result.getId());
-        verify(carBookingJpaRepository).findById(5L);
+        assertEquals("BKG0000005", result.getId());
+        verify(carBookingJpaRepository).findById("BKG0000005");
         verify(carBookingJpaRepository).save(managedRow);
     }
 
     @Test
     void findById_shouldMapEntityToDomain() {
-        when(carBookingJpaRepository.findById(7L)).thenReturn(Optional.of(entity(7L, "CONFIRMED")));
+        when(carBookingJpaRepository.findById("BKG0000007")).thenReturn(Optional.of(entity("BKG0000007", "CONFIRMED")));
 
-        final Optional<Booking> result = carBookingAdapter.findById(7L);
+        final Optional<Booking> result = carBookingAdapter.findById("BKG0000007");
 
         assertTrue(result.isPresent());
         assertEquals(BookingStatusEnum.CONFIRMED, result.get().getStatus());
@@ -108,9 +108,10 @@ class CarBookingAdapterTest {
         final OffsetDateTime deadline = OffsetDateTime.parse("2026-07-03T00:00:00Z");
         when(carBookingJpaRepository.findByPaymentModeAndBookingStatusAndRentalStartDateLessThanEqual(
                 "BANK_TRANSFER", "PENDING_PAYMENT", deadline))
-                .thenReturn(List.of(entity(1L, "PENDING_PAYMENT"), entity(2L, "PENDING_PAYMENT")));
+                .thenReturn(List.of(entity("BKG0000001", "PENDING_PAYMENT"), entity("BKG0000002", "PENDING_PAYMENT")));
 
-        final List<Booking> result = carBookingAdapter.findBankTransferBookingsAwaitingPaymentStartingBefore(deadline);
+        final List<Booking> result =
+                carBookingAdapter.findBankTransferBookingsAwaitingPaymentStartingBefore(deadline);
 
         assertEquals(2, result.size());
         verify(carBookingJpaRepository).findByPaymentModeAndBookingStatusAndRentalStartDateLessThanEqual(

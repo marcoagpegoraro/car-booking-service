@@ -16,7 +16,7 @@ public class UpdateBookingPayedByBankTransferPaymentUseCase implements UpdateBoo
 
     @Override
     @Transactional
-    public void execute(final Long bookingId) {
+    public void execute(final String bookingId) {
         final Booking booking = carBookingPort.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("The provided booking ID was not found: " + bookingId));
 

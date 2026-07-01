@@ -10,7 +10,7 @@ import nl.velocitymotors.car_booking_service.domain.exceptions.InvalidCarConfirm
 @Getter
 public class Booking {
 
-    private Long id;
+    private String id;
     private final String customerName;
     private final String vehicleId;
     private final RentalPeriod rentalPeriod;
@@ -19,7 +19,7 @@ public class Booking {
     private final String paymentReference;
     private BookingStatusEnum status;
 
-    private Booking(final Long id, final String customerName, final String vehicleId, final RentalPeriod rentalPeriod,
+    private Booking(final String id, final String customerName, final String vehicleId, final RentalPeriod rentalPeriod,
                     final VehicleCategoryEnum vehicleCategory, final PaymentModeEnum paymentMode,
                     final String paymentReference, final BookingStatusEnum status) {
         this.id = id;
@@ -43,7 +43,7 @@ public class Booking {
                 paymentReference, BookingStatusEnum.PENDING_PAYMENT);
     }
 
-    public static Booking reconstitute(final Long id, final String customerName, final String vehicleId,
+    public static Booking reconstitute(final String id, final String customerName, final String vehicleId,
                                        final RentalPeriod rentalPeriod, final VehicleCategoryEnum vehicleCategory,
                                        final PaymentModeEnum paymentMode, final String paymentReference,
                                        final BookingStatusEnum status) {

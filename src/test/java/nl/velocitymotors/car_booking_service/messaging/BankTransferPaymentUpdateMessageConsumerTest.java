@@ -48,13 +48,13 @@ class BankTransferPaymentUpdateMessageConsumerTest {
     @Test
     void shouldConfirmBookingExtractedFromTransactionDetails() throws Exception {
         // GIVEN "<TxnRef> <BookingId>"
-        final byte[] message = serialize(event("TXN987654321 1000000042"));
+        final byte[] message = serialize(event("TXN987654321 BKG0012345"));
 
         // WHEN
         consumer.consume(message);
 
         // THEN the booking id is forwarded to the update use case
-        verify(updateBookingPayedByBankTransfer).execute(1000000042L);
+        verify(updateBookingPayedByBankTransfer).execute("BKG0012345");
     }
 
     @Test
@@ -62,6 +62,6 @@ class BankTransferPaymentUpdateMessageConsumerTest {
         final byte[] message = serialize(event("MISSING_BOOKING_ID"));
 
         assertThrows(IllegalArgumentException.class, () -> consumer.consume(message));
-        verify(updateBookingPayedByBankTransfer, never()).execute(org.mockito.ArgumentMatchers.anyLong());
+        verify(updateBookingPayedByBankTransfer, never()).execute(org.mockito.ArgumentMatchers.anyString());
     }
 }
