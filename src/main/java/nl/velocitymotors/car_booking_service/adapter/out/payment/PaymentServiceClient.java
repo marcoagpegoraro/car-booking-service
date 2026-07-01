@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@FeignClient(name = "payment-service-client")
+@FeignClient(name = "payment-service-client", fallbackFactory = PaymentServiceClientFallbackFactory.class)
 public interface PaymentServiceClient {
 
     @RequestMapping("/payment-status")
