@@ -1,12 +1,10 @@
 package nl.velocitymotors.car_booking_service.adapter.out.booking;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
@@ -16,8 +14,7 @@ import java.time.OffsetDateTime;
 @Setter
 public class CarBookingJpaEntity {
     @Id
-    @GeneratedValue(generator = "booking-reference")
-    @GenericGenerator(name = "booking-reference", type = BookingReferenceGenerator.class)
+    @BookingReference
     private String id;
     private String vehicleID;
     private OffsetDateTime rentalStartDate;
