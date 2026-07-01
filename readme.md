@@ -4,8 +4,8 @@ This is a microservice that is responsible for processing the requests to confir
 
 It has three input adapters:
 - HTTP endpoint responsible for confirming a car booking.
-- Kafka consumer that consumes the bank-transfer payment-completed events and confirms the booking accordingly.
-- Scheduler that runs daily to cancel any bank-transfer booking whose payment was not received at least 48 hours before the rental start date.
+- Kafka consumer that consumes the bank transfer payment completed events and confirms the booking accordingly.
+- Scheduler that runs daily to cancel any bank transfer booking whose payment was not received at least 48 hours before the rental start date.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ It was built using the hexagonal architecture pattern together with DDD. Each la
 These are the main packages of the application:
 
 - adapter
-  - Responsible for the inputs of the application (HTTP, Scheduler and Kafka) and its outputs (database via JPA and the credit-card payment service via HTTP).
+  - Responsible for the inputs of the application (HTTP, Scheduler and Kafka) and its outputs (database via JPA and the credit card payment service via HTTP).
 - domain
   - The heart of the application, free of framework/infrastructure concerns.
   - We have here the `Booking` aggregate: it contains all the logic to create a valid booking and to transition its status (`confirmPayment()` / `cancel()`) using plain Java, protecting its own invariants.
@@ -34,7 +34,7 @@ These are the main packages of the application:
 - Apache Avro
 - Docker Compose for all the other services that the app needs to run
 - OpenFeign for HTTP requests
-- Spring Scheduling for the bank-transfer auto-cancellation
+- Spring Scheduling for the bank transfer auto cancellation
 - Node.js for the developer tooling under `dev/` (the payment mock and the Kafka Avro sender)
 
 ## Running the application
@@ -47,7 +47,7 @@ First, start the dependencies (database, mocked payment service and Kafka/Zookee
 docker compose up -d
 ```
 
-> Note: the `car-booking-service` itself is **not** part of Docker Compose — Compose only starts the dependencies above.
+> Note: the `car-booking-service` itself is **not** part of Docker Compose, compose only starts the dependencies above.
 
 Then start the microservice from the project root:
 
@@ -58,8 +58,8 @@ Then start the microservice from the project root:
 All configuration properties have sensible local defaults (see `application.properties`), so no environment variables are required to run it locally.
 
 The `dev/` folder holds the developer tooling that isn't part of the service itself:
-- `dev/payment-service` — the Node.js mock of the credit-card payment API (built and run by Docker Compose).
-- `dev/kafka-avro-sender` — a Node.js script to publish Avro payment events to Kafka (see below).
+- `dev/payment-service` the Node.js mock of the credit card payment API (built and run by Docker Compose).
+- `dev/kafka-avro-sender` a Node.js script to publish Avro payment events to Kafka (see below).
 
 ## API collection (Bruno)
 
@@ -68,13 +68,13 @@ An API collection is provided at [`docs/opencollection.yml`](docs/opencollection
 It ships with a `dev` environment (`baseURL = http://localhost:8080`) and an example request for every scenario:
 - booking with cash, bank transfer, and credit card (approved / refused reference);
 - the validation errors (invalid enum value, start date after end date, more than 21 days, missing required field);
-- direct calls to the mocked credit-card payment service (approved / rejected reference).
+- direct calls to the mocked credit card payment service (approved / rejected reference).
 
 ## Sending a Kafka payment event
 
-The `bank-transfer-payment-events` topic (auto-created on startup) carries **Avro-encoded** `BankTransferPaymentCompletedEvent` messages — the schema lives in [`src/main/avro/bank-transfer-payment-completed-event.avsc`](src/main/avro/bank-transfer-payment-completed-event.avsc).
+The `bank-transfer-payment-events` topic (auto created on startup) carries Avro encoded `BankTransferPaymentCompletedEvent` messages, the schema lives in [`src/main/avro/bank-transfer-payment-completed-event.avsc`](src/main/avro/bank-transfer-payment-completed-event.avsc).
 
-Because the payload is raw Avro binary (not plain text/JSON), it cannot be produced with `kafka-console-producer`. Use the Node helper in [`dev/kafka-avro-sender`](dev/kafka-avro-sender): edit the event in [`message.json`](dev/kafka-avro-sender/message.json) — putting the target booking id at the end of `transactionDetails` — then run:
+Use the Node helper in [`dev/kafka-avro-sender`](dev/kafka-avro-sender): edit the event in [`message.json`](dev/kafka-avro-sender/message.json) and then run:
 
 ```
 cd dev/kafka-avro-sender
@@ -82,7 +82,7 @@ pnpm install
 node send.js
 ```
 
-The service reads the booking id from `transactionDetails` and moves that pending bank-transfer booking to `CONFIRMED`.
+The service reads the booking id from `transactionDetails` and moves that pending bank transfer booking to `CONFIRMED`.
 
 ## The microservice in action
 
@@ -90,13 +90,13 @@ Here are a few screenshots showing the microservice working as intended.
 
 ### Bookings
 
-Car booking paid with cash — confirmed immediately:
+Car booking paid with cash, confirmed immediately:
 ![booking_cash.png](docs/screenshots/booking_cash.png)
 
-Car booking paid by bank transfer — created as `PENDING_PAYMENT`:
+Car booking paid by bank transfer, created as `PENDING_PAYMENT`:
 ![booking_bank.png](docs/screenshots/booking_bank.png)
 
-Car booking paid by credit card, payment approved — confirmed:
+Car booking paid by credit card, payment approved, confirmed:
 ![booking_card_ok.png](docs/screenshots/booking_card_ok.png)
 
 Car booking paid by credit card, payment refused:
@@ -110,16 +110,28 @@ Invalid value for the payment mode enum:
 Rental start date is after the end date:
 ![ve_greater.png](docs/screenshots/ve_greater.png)
 
-Rental is longer than the 21-day maximum:
+Rental is longer than the 21 day maximum:
 ![ve_days.png](docs/screenshots/ve_days.png)
 
 A required field is null:
 ![ve_null.png](docs/screenshots/ve_null.png)
 
-### Mocked credit-card payment service
+### Mocked credit card payment service
 
 Approved payment reference:
 ![api_ok.png](docs/screenshots/api_ok.png)
 
 Rejected payment reference:
 ![api_nok.png](docs/screenshots/api_nok.png)
+
+
+## References:
+
+https://stackoverflow.com/questions/11631800/hibernate-how-specify-custom-sequence-generator-class-name-using-annotations
+https://github.com/isdelrey/kafkajs-avro
+https://www.baeldung.com/hibernate-identifiers
+https://stackoverflow.com/questions/63414507/push-avro-message-to-kafka-topic
+https://medium.com/@arun.badhai/entity-value-object-aggregate-and-aggregate-root-in-ddd-9fb9342c1df0
+https://medium.com/bliblidotcom-techblog/spring-cloud-circuit-breaker-implementation-using-resilience4j-and-spring-open-feign-734d0fd34e37
+https://www.baeldung.com/spring-scheduled-tasks
+https://dev.to/jhonifaber/hexagonal-architecture-or-port-adapters-23ed
