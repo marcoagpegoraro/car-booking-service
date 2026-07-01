@@ -11,7 +11,7 @@ services:
       - "5432:5432"
 
   credit-card-payment-api:
-    build: payment-service
+    build: dev/payment-service
     container_name: credit-card-payment-api
     ports:
       - "9090:9090"

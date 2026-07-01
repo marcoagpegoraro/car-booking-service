@@ -35,11 +35,11 @@ These are the main packages of the application:
 - Docker Compose for all the other services that the app needs to run
 - OpenFeign for HTTP requests
 - Spring Scheduling for the bank-transfer auto-cancellation
-- Node.js to mock the payment service endpoint
+- Node.js for the developer tooling under `dev/` (the payment mock and the Kafka Avro sender)
 
 ## Running the application
 
-You will need Docker and a JDK 25 installed on your machine.
+You will need Docker, a JDK 25 and Node.js installed on your machine.
 
 First, start the dependencies (database, mocked payment service and Kafka/Zookeeper) with:
 
@@ -57,6 +57,10 @@ Then start the microservice from the project root:
 
 All configuration properties have sensible local defaults (see `application.properties`), so no environment variables are required to run it locally.
 
+The `dev/` folder holds the developer tooling that isn't part of the service itself:
+- `dev/payment-service` — the Node.js mock of the credit-card payment API (built and run by Docker Compose).
+- `dev/kafka-avro-sender` — a Node.js script to publish Avro payment events to Kafka (see below).
+
 ## API collection (Bruno)
 
 An API collection is provided at [`docs/opencollection.yml`](docs/opencollection.yml), exported in the OpenCollection format. It can be imported into [Bruno](https://www.usebruno.com/).
@@ -68,43 +72,17 @@ It ships with a `dev` environment (`baseURL = http://localhost:8080`) and an exa
 
 ## Sending a Kafka payment event
 
-The `bank-transfer-payment-events` topic (auto-created on startup) carries **Avro-encoded** `BankTransferPaymentCompletedEvent` messages — the schema lives in `src/main/avro/bank-transfer-payment-completed-event.avsc`.
+The `bank-transfer-payment-events` topic (auto-created on startup) carries **Avro-encoded** `BankTransferPaymentCompletedEvent` messages — the schema lives in [`src/main/avro/bank-transfer-payment-completed-event.avsc`](src/main/avro/bank-transfer-payment-completed-event.avsc).
 
-Because the payload is Avro binary (not plain text/JSON), it cannot be produced with `kafka-console-producer`. A simple way to publish a valid test event is with a small Python script:
+Because the payload is raw Avro binary (not plain text/JSON), it cannot be produced with `kafka-console-producer`. Use the Node helper in [`dev/kafka-avro-sender`](dev/kafka-avro-sender): edit the event in [`message.json`](dev/kafka-avro-sender/message.json) — putting the target booking id at the end of `transactionDetails` — then run:
 
-```python
-# pip install fastavro kafka-python
-import io, decimal
-from fastavro import schemaless_writer
-from kafka import KafkaProducer
-
-schema = {
-    "type": "record",
-    "name": "BankTransferPaymentCompletedEvent",
-    "namespace": "nl.velocitymotors.carbooking.payment.avro",
-    "fields": [
-        {"name": "paymentId", "type": "string"},
-        {"name": "senderAccountNumber", "type": "string"},
-        {"name": "paymentAmount", "type": {"type": "bytes", "logicalType": "decimal", "precision": 12, "scale": 2}},
-        {"name": "transactionDetails", "type": "string"}
-    ]
-}
-
-buffer = io.BytesIO()
-schemaless_writer(buffer, schema, {
-    "paymentId": "PAY-1",
-    "senderAccountNumber": "NL00BANK0123456789",
-    "paymentAmount": decimal.Decimal("250.00"),
-    # Format: "<TxnRef> <BookingId>". The BookingId is the id returned when the booking was confirmed (e.g. 3).
-    "transactionDetails": "TXN987654321 3"
-})
-
-producer = KafkaProducer(bootstrap_servers="localhost:9092")
-producer.send("bank-transfer-payment-events", buffer.getvalue())
-producer.flush()
+```
+cd dev/kafka-avro-sender
+pnpm install
+node send.js
 ```
 
-When consumed, the service extracts the booking id from `transactionDetails` and moves that booking to `CONFIRMED`.
+The service reads the booking id from `transactionDetails` and moves that pending bank-transfer booking to `CONFIRMED`.
 
 ## The microservice in action
 

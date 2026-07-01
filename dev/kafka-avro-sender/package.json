@@ -1,0 +1,14 @@
+{
+  "name": "kafka-avro-sender",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "send.js",
+  "scripts": {
+    "start": "node send.js"
+  },
+  "dependencies": {
+    "avsc": "^5.7.7",
+    "kafkajs": "^2.2.4"
+  }
+}
