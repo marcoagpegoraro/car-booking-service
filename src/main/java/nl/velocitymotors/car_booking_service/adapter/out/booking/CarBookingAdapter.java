@@ -24,13 +24,13 @@ public class CarBookingAdapter implements CarBookingPort {
         return carBookingMapper.jpaToDto(savedCarBookingEntity);
     }
 
-    public void updateBookingPaymentStatus(String reservationId, BookingStatusEnum reservationStatus){
-        Optional<CarBookingJpaEntity> reservationOptional = carBookingJpaRepository.findById(reservationId);
-        if(reservationOptional.isEmpty()){
-            throw new BookingNotFoundException("The provided booking ID was not found: " + reservationId);
+    public void updateBookingPaymentStatus(String bookingId, BookingStatusEnum bookingStatus){
+        Optional<CarBookingJpaEntity> bookingOptional = carBookingJpaRepository.findById(bookingId);
+        if(bookingOptional.isEmpty()){
+            throw new BookingNotFoundException("The provided booking ID was not found: " + bookingId);
         }
-        final var reservation = reservationOptional.get();
-        reservation.setBookingStatus(String.valueOf(reservationStatus));
-        carBookingJpaRepository.save(reservation);
+        final var booking = bookingOptional.get();
+        booking.setBookingStatus(String.valueOf(bookingStatus));
+        carBookingJpaRepository.save(booking);
     }
 }

@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nl.velocitymotors.car_booking_service.adapter.in.web.dto.CarBookingConfirmRequest;
 import nl.velocitymotors.car_booking_service.adapter.in.web.dto.CarBookingConfirmResponse;
+import nl.velocitymotors.car_booking_service.adapter.in.web.mapper.CarBookingConfirmMapper;
+import nl.velocitymotors.car_booking_service.port.in.ConfirmCarBookingPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/car-booking")
 @RequiredArgsConstructor
 public class CarBookingController {
+
+    private final ConfirmCarBookingPort confirmCarBooking;
+    private final CarBookingConfirmMapper carBookingConfirmMapper;
 
 
     @PostMapping("/confirm")
