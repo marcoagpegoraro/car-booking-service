@@ -17,10 +17,7 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
 
     private final UpdateBookingPayedByBankTransferPort updateBookingPayedByBankTransfer;
 
-    @KafkaListener(
-            topics = "${kafka.topic-name}",
-            groupId = "${kafka.group-id}"
-    )
+    @KafkaListener(topics = "${kafka.topic-name}")
     public void consume(final byte[] message) {
         final GenericRecord projection = deserializeFields(
                 message, BankTransferPaymentCompletedEvent.getClassSchema(), "transactionDetails");
