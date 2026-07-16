@@ -7,9 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class RentalPeriodTest {
 
@@ -33,6 +32,23 @@ class RentalPeriodTest {
     @Test
     void shouldRejectMoreThan21Days() {
         assertThrows(InvalidCarConfirmationException.class, () -> new RentalPeriod(START, START.plusDays(22)));
+    }
+
+    @Test
+    void shouldRejectTwentyOneDaysPlusOneHour() {
+        assertThrows(InvalidCarConfirmationException.class,
+                () -> new RentalPeriod(START, START.plusDays(21).plusHours(1)));
+    }
+
+    @Test
+    void shouldRejectJustOverTheLimitBySeconds() {
+        assertThrows(InvalidCarConfirmationException.class,
+                () -> new RentalPeriod(START, START.plusDays(21).plusSeconds(1)));
+    }
+
+    @Test
+    void shouldAcceptExactlyTwentyOneDaysToTheSecond() {
+        assertDoesNotThrow(() -> new RentalPeriod(START, START.plusDays(21)));
     }
 
     @Test
