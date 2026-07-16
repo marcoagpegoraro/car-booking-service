@@ -12,17 +12,6 @@ import java.util.List;
 import java.util.Objects;
 public interface AvroMessageConsumer {
 
-    default <T extends SpecificRecord> T deserialize(final byte[] message, final Class<T> eventClass) {
-        try {
-            final var reader = new SpecificDatumReader<T>(eventClass);
-            final var decoder = DecoderFactory.get().binaryDecoder(message, null);
-
-            return reader.read(null, decoder);
-        } catch (Exception exception) {
-            throw new IllegalStateException("Failed to deserialize Avro event: " + eventClass.getSimpleName(), exception);
-        }
-    }
-
     // https://avro.apache.org/docs/1.8.2/api/java/org/apache/avro/generic/GenericDatumReader.html
     default GenericRecord deserializeFields(final byte[] message, final Schema writerSchema, final String... fields) {
         try {
