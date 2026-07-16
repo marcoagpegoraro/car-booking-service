@@ -83,4 +83,5 @@ Application running:
 ![Running](docs/screenshots/running.png)
 
 All the 62 tests passing:
+
 ![Tests](docs/screenshots/tests.png)
