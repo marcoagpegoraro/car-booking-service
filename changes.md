@@ -2,15 +2,12 @@
 
 This document summarizes the changes made to the assignment during the improvement round.
 
----
 
 ## Bug fixes
 
 - Bug with the logic to verify if the booking has more than 21 days
   - The rule used ChronoUnit, which truncates the hours, allowing invalid bookings, now it is using the "Duration.between(...)" API.
   - Commit: [fix: shouldn't allow a booking with 21 days and 1 second](https://github.com/marcoagpegoraro/car-booking-service/commit/491f7732327445b4f8de2908741b1fbad38437d3)
-
----
 
 ## Improvements
 
@@ -30,7 +27,9 @@ This document summarizes the changes made to the assignment during the improveme
   - Added the jacoco plugin so each "mvn test" generates an HTML coverage report.
   - Commit: [feat: jacoco plugin so it can generate the unit test code coverage](https://github.com/marcoagpegoraro/car-booking-service/commit/61135b8d7bfa9e4df1caa15ef0017957379470d7)
 
----
+- Removed the creation of the car booking table and its id sequence from the application
+  - Using instead a "init.sql" script both for the docker compose file and the test containers integration test, this way this responsibility is removed from the application, just like a production ready multi instance application.
+  - Commit: [feat: db sequence and car booking table created outside the application](https://github.com/marcoagpegoraro/car-booking-service/commit/d11a4c7760003b92bb5f0f16a326dbafa4c0087d)
 
 ## Tests
 
@@ -62,7 +61,6 @@ This document summarizes the changes made to the assignment during the improveme
   - RentalPeriodTest now covers exactly 21 days, 21 days plus one hour and 21 days plus one second.
   - Commit: [fix: shouldn't allow a booking with 21 days and 1 second](https://github.com/marcoagpegoraro/car-booking-service/commit/491f7732327445b4f8de2908741b1fbad38437d3)
 
----
 
 ## Code coverage
 
@@ -72,7 +70,6 @@ This document summarizes the changes made to the assignment during the improveme
 JaCoCo coverage:
 ![JaCoCo coverage](docs/screenshots/jacoco_coverage.png)
 
----
 
 ## Screenshots
 
