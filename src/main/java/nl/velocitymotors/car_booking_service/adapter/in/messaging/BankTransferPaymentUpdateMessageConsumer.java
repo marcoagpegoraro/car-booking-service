@@ -31,7 +31,7 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
         } catch (final BookingNotFoundException exception) {
             log.warn("Received a bank transfer payment for an unknown booking {}", bookingId, exception);
         } catch (final InvalidBookingStateException exception) {
-            // e.g. a payment arriving for an already-cancelled booking; log and move on.
+            // e.g. a payment arriving for an already bcanceled booking; log and move on.
             log.warn("Cannot apply bank transfer payment to booking {}: {}", bookingId, exception.getMessage());
         }
     }

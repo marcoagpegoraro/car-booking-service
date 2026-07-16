@@ -1,5 +1,6 @@
 package nl.velocitymotors.car_booking_service.usecases;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.velocitymotors.car_booking_service.domain.model.Booking;
 import nl.velocitymotors.car_booking_service.port.in.CancelExpiredBankTransferBookingsPort;
@@ -14,20 +15,13 @@ import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CancelExpiredBankTransferBookingsUseCase implements CancelExpiredBankTransferBookingsPort {
 
     private final CarBookingPort carBookingPort;
     private final Clock clock;
+    @Value("${booking.cancellation.payment-window-hours}")
     private final long paymentWindowHours;
-
-    public CancelExpiredBankTransferBookingsUseCase(
-            final CarBookingPort carBookingPort,
-            final Clock clock,
-            @Value("${booking.cancellation.payment-window-hours}") final long paymentWindowHours) {
-        this.carBookingPort = carBookingPort;
-        this.clock = clock;
-        this.paymentWindowHours = paymentWindowHours;
-    }
 
     @Override
     @Transactional
