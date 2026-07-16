@@ -41,7 +41,7 @@ class CarBookingAdapterTest {
         final var entity = new CarBookingJpaEntity();
         entity.setId(id);
         entity.setCustomerName("Ana");
-        entity.setVehicleID("VH-1");
+        entity.setVehicleId("VH-1");
         entity.setRentalStartDate(START);
         entity.setRentalEndDate(END);
         entity.setVehicleCategory("SUV");

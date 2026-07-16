@@ -46,7 +46,7 @@ public class CarBookingAdapter implements CarBookingPort {
 
     private void applyToEntity(final Booking booking, final CarBookingJpaEntity entity) {
         entity.setCustomerName(booking.getCustomerName());
-        entity.setVehicleID(booking.getVehicleId());
+        entity.setVehicleId(booking.getVehicleId());
         entity.setRentalStartDate(booking.getRentalPeriod().start());
         entity.setRentalEndDate(booking.getRentalPeriod().end());
         entity.setVehicleCategory(booking.getVehicleCategory().name());
@@ -59,7 +59,7 @@ public class CarBookingAdapter implements CarBookingPort {
         return Booking.reconstitute(
                 entity.getId(),
                 entity.getCustomerName(),
-                entity.getVehicleID(),
+                entity.getVehicleId(),
                 new RentalPeriod(entity.getRentalStartDate(), entity.getRentalEndDate()),
                 VehicleCategoryEnum.valueOf(entity.getVehicleCategory()),
                 PaymentModeEnum.valueOf(entity.getPaymentMode()),

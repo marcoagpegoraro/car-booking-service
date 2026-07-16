@@ -16,7 +16,7 @@ public class CarBookingJpaEntity {
     @Id
     @BookingReference
     private String id;
-    private String vehicleID;
+    private String vehicleId;
     private OffsetDateTime rentalStartDate;
     private OffsetDateTime rentalEndDate;
     private String customerName;

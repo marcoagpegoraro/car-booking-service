@@ -25,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=validate")
 class CarBookingJpaRepositoryIntegrationTest {
 
     @Container
     @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine")
-            .withInitScript("db/booking-reference-seq.sql");
+            .withInitScript("db/init.sql");
 
     @Autowired
     private CarBookingJpaRepository carBookingJpaRepository;
@@ -57,7 +57,7 @@ class CarBookingJpaRepositoryIntegrationTest {
                 .findByPaymentModeAndBookingStatusAndRentalStartDateLessThanEqual(BANK_TRANSFER, PENDING_PAYMENT, deadline);
 
         //then
-        final List<String> vehicleIds = result.stream().map(CarBookingJpaEntity::getVehicleID).toList();
+        final List<String> vehicleIds = result.stream().map(CarBookingJpaEntity::getVehicleId).toList();
         assertEquals(2, result.size());
         assertTrue(vehicleIds.containsAll(List.of("VH-before", "VH-now")));
     }
@@ -77,7 +77,7 @@ class CarBookingJpaRepositoryIntegrationTest {
     private static CarBookingJpaEntity entity(final String paymentMode, final String bookingStatus,
                                               final String rentalStart, final String vehicleId) {
         final var entity = new CarBookingJpaEntity();
-        entity.setVehicleID(vehicleId);
+        entity.setVehicleId(vehicleId);
         entity.setCustomerName("Marco");
         entity.setVehicleCategory("SUV");
         entity.setPaymentMode(paymentMode);

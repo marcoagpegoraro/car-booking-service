@@ -27,14 +27,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+@TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=validate")
 @Import(CarBookingAdapter.class)
 class CarBookingPersistenceIntegrationTest {
 
     @Container
     @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine")
-            .withInitScript("db/booking-reference-seq.sql");
+            .withInitScript("db/init.sql");
 
     @Autowired
     private CarBookingAdapter carBookingAdapter;
