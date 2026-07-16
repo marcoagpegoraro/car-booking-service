@@ -6,6 +6,7 @@ import nl.velocitymotors.car_booking_service.domain.exceptions.BookingNotFoundEx
 import nl.velocitymotors.car_booking_service.domain.exceptions.InvalidBookingStateException;
 import nl.velocitymotors.car_booking_service.port.in.UpdateBookingPayedByBankTransferPort;
 import nl.velocitymotors.carbooking.payment.avro.BankTransferPaymentCompletedEvent;
+import org.apache.avro.generic.GenericRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -21,10 +22,11 @@ public class BankTransferPaymentUpdateMessageConsumer implements AvroMessageCons
             groupId = "${kafka.group-id}"
     )
     public void consume(final byte[] message) {
-        final var event = deserialize(message, BankTransferPaymentCompletedEvent.class);
-        final String bookingId = extractBookingId(event.getTransactionDetails());
+        final GenericRecord projection = deserializeFields(
+                message, BankTransferPaymentCompletedEvent.getClassSchema(), "transactionDetails");
+        final String bookingId = extractBookingId(String.valueOf(projection.get("transactionDetails")));
 
-        log.info("Received bank transfer payment {} for booking {}", event.getPaymentId(), bookingId);
+        log.info("Applying a bank transfer payment to booking {}", bookingId);
 
         try {
             updateBookingPayedByBankTransfer.execute(bookingId);

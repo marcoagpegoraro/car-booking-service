@@ -3,6 +3,7 @@ package nl.velocitymotors.car_booking_service.messaging;
 import nl.velocitymotors.car_booking_service.adapter.in.messaging.BankTransferPaymentUpdateMessageConsumer;
 import nl.velocitymotors.car_booking_service.port.in.UpdateBookingPayedByBankTransferPort;
 import nl.velocitymotors.carbooking.payment.avro.BankTransferPaymentCompletedEvent;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -63,5 +66,21 @@ class BankTransferPaymentUpdateMessageConsumerTest {
 
         assertThrows(IllegalArgumentException.class, () -> consumer.consume(message));
         verify(updateBookingPayedByBankTransfer, never()).execute(org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void shouldReadOnlyTheProjectedFieldWithoutTheRestOfTheMessage() throws Exception {
+        //given
+        final byte[] eventWithAllFieldsFilled = serialize(event("TXN987654321 BKG0000009"));
+
+        //when
+        final GenericRecord projection = consumer.deserializeFields(
+                eventWithAllFieldsFilled, BankTransferPaymentCompletedEvent.getClassSchema(), "transactionDetails");
+
+        //then
+        assertEquals("TXN987654321 BKG0000009", projection.get("transactionDetails").toString());
+        assertEquals(1, projection.getSchema().getFields().size());
+        assertNull(projection.getSchema().getField("paymentId"));
+        assertNull(projection.getSchema().getField("paymentAmount"));
     }
 }
